@@ -65,6 +65,10 @@
     <span class="tip__title" data-title></span>
   </div>
 
+  <main class="listview" hidden aria-label="Alt indhold som liste">
+    <div class="listview__inner"></div>
+  </main>
+
   <footer class="hud hud--bottom">
     <ul class="hints" aria-label="Styring">
       <li class="hint--mouse"><kbd>Træk</kbd>kig rundt</li>
@@ -76,6 +80,18 @@
       <li class="hint--touch"><kbd>To fingre</kbd>flyt</li>
       <li><kbd>Klik</kbd>åbn</li>
     </ul>
+    <div class="viewswitch" role="group" aria-label="Visning" data-active="orbit">
+      <span class="viewswitch__thumb" aria-hidden="true"></span>
+      <button type="button" data-view="orbit" aria-pressed="true" title="Orbit (L skifter)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="2.5"/><ellipse cx="12" cy="12" rx="9.5" ry="4.5" transform="rotate(-24 12 12)"/></svg>
+        Orbit
+      </button>
+      <button type="button" data-view="list" aria-pressed="false" title="Liste (L skifter)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="7" height="9" rx="1.5"/><rect x="13" y="4" width="7" height="5" rx="1.5"/><rect x="4" y="15" width="7" height="5" rx="1.5"/><rect x="13" y="11" width="7" height="9" rx="1.5"/></svg>
+        Liste
+      </button>
+    </div>
+
     <div class="status">
       <span class="status__count" data-status aria-live="polite"></span>
       <button class="btn btn--ghost-dark btn--round" type="button" data-home aria-label="Tilbage til overblik (H)" title="Tilbage til overblik (H)">

@@ -4,6 +4,7 @@
 
 import * as THREE from 'three';
 import { Viewer } from './viewer.js';
+import { ListView } from './listview.js';
 import { motion, ease, prefersReducedMotion } from './motion.js';
 import { UPLOAD_URL, VIDEOS_EDIT_URL } from './config.js';
 
@@ -590,7 +591,11 @@ const state = {
   pointerType: 'mouse',
   keys: new Set(),
   interacted: false,
+  view: 'orbit', // 'orbit' | 'list'
+  viewChangedAt: 0,
 };
+
+let listView = null; // built the first time the list is shown
 
 const raycaster = new THREE.Raycaster();
 
@@ -634,6 +639,7 @@ chips.forEach((chip) => {
   chip.addEventListener('click', () => {
     state.filter = chip.dataset.filter;
     chips.forEach((c) => c.setAttribute('aria-pressed', String(c === chip)));
+    if (listView?.built) listView.applyFilter(matchesFilter);
   });
 });
 
@@ -682,7 +688,7 @@ const viewer = new Viewer($('.viewer'), {
     const i = list.indexOf(state.current);
     const next = list[(i + step + list.length) % list.length];
     state.current = next;
-    flyTo(framingPose(next), motion.duration.slower, ease.inOut);
+    if (state.view === 'orbit') flyTo(framingPose(next), motion.duration.slower, ease.inOut);
     viewer.show(next.data, list.indexOf(next), list.length);
   },
 });
@@ -691,6 +697,13 @@ function openCard(card) {
   const list = visibleCards();
   if (!list.includes(card)) return;
   state.current = card;
+  if (state.view === 'list') {
+    // No flight in the list: the viewer opens straight away.
+    state.viewerOpen = true;
+    document.body.classList.add('is-viewing');
+    viewer.open(card.data, list.indexOf(card), list.length);
+    return;
+  }
   state.orbitHold = true;
   state.orbitScale = 0;
   state.hovered = null;
@@ -906,6 +919,11 @@ window.addEventListener('keydown', (e) => {
   if (tag === 'INPUT' || tag === 'TEXTAREA') return;
   const k = e.key.toLowerCase();
 
+  if (k === 'l' && !e.repeat && listView) {
+    setView(state.view === 'orbit' ? 'list' : 'orbit');
+    return;
+  }
+  if (state.view === 'list') return;
   if (k === 'h') {
     goHome();
     return;
@@ -1022,6 +1040,56 @@ state.cards.forEach((card) => {
   a11yList.append(li);
 });
 
+// ---------------------------------------------------------------- view switch: orbit / list
+
+const listRoot = $('.listview');
+const viewSwitch = $('.viewswitch');
+const viewButtons = viewSwitch.querySelectorAll('[data-view]');
+listView = new ListView(listRoot, { onOpen: openCard });
+let listHideTimer = 0;
+viewSwitch.hidden = state.cards.length === 0;
+
+function setView(view, { instant = false } = {}) {
+  if (!state.cards.length || state.viewerOpen || view === state.view) return;
+  state.view = view;
+  state.viewChangedAt = performance.now();
+  viewSwitch.dataset.active = view;
+  viewButtons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === view)));
+  document.body.classList.toggle('is-list', view === 'list');
+  try { localStorage.setItem('adboard:view', view); } catch { /* private mode */ }
+  history.replaceState(null, '', view === 'list' ? '#liste' : location.pathname + location.search);
+
+  // Drop whatever the 3D scene was in the middle of.
+  state.keys.clear();
+  drag.active = false;
+  pointers.clear();
+  unlockPointer();
+  state.hovered = null;
+  hideTip();
+
+  clearTimeout(listHideTimer);
+  if (view === 'list') {
+    listView.build(state.cards);
+    listView.applyFilter(matchesFilter);
+    listRoot.hidden = false;
+    canvas.tabIndex = -1;
+    if (instant) listRoot.classList.add('is-open');
+    else requestAnimationFrame(() => listRoot.classList.add('is-open'));
+  } else {
+    listRoot.classList.remove('is-open');
+    canvas.tabIndex = 0;
+    listHideTimer = setTimeout(() => { listRoot.hidden = true; }, instant ? 0 : motion.duration.base);
+  }
+}
+
+viewButtons.forEach((b) => b.addEventListener('click', () => setView(b.dataset.view)));
+
+let savedView = null;
+try { savedView = localStorage.getItem('adboard:view'); } catch { /* private mode */ }
+if (location.hash === '#liste' || (savedView === 'list' && location.hash !== '#orbit')) {
+  setView('list', { instant: true });
+}
+
 // Home pose + intro flight: the outermost ring just about spans the screen.
 function homeDistance() {
   const halfV = Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2);
@@ -1058,8 +1126,10 @@ const tasks = state.cards.map((card) => async () => {
     card.mat.uniforms.uAspect.value = aspect;
     card.size = cardSize(aspect);
     card.loaded = true;
+    listView.cardLoaded(card);
   } catch (err) {
     card.failed = true; // fades out and is skipped by picking, filters and the viewer
+    listView.cardFailed(card);
     throw err;
   } finally {
     loadedCount++;
@@ -1148,6 +1218,11 @@ function updateHover() {
 function frame() {
   const dt = Math.min(clock.getDelta(), 0.05);
   const now = performance.now();
+  // The list covers the scene: once it has faded in, stop drawing the 3D board.
+  if (state.view === 'list' && now - state.viewChangedAt > motion.duration.moderate) {
+    requestAnimationFrame(frame);
+    return;
+  }
   updateCamera(dt, now);
   updateCards(dt);
   updateHover();

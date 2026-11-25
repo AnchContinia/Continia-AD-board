@@ -41,6 +41,7 @@ Hvert push til `main` kører workflowet [Deploy moodboard](.github/workflows/pag
 | Åbn | Klik på et kort | Tryk på et kort |
 | I viseren | `←` `→` bladrer, `Esc` lukker | |
 | Tilbage til overblik | `H` eller sigtekorn-knappen | Sigtekorn-knappen |
+| Orbit eller liste | Knappen nederst i midten, eller `L` | Knappen nederst i midten |
 
 ## Kør lokalt
 
@@ -57,6 +58,7 @@ Siden skal serveres over http. YouTube-embeds virker ikke fra `file://`.
 |---|---|
 | `index.html` | Siden: HUD, viser og tilgængelig indholdsliste |
 | `src/main.js` | 3D-scenen (Three.js 0.170): layout i ringe, kamera, input, thumbnails |
+| `src/listview.js` | Listevisningen: alt indhold som grid, grupperet som ringene |
 | `src/viewer.js` | Viseren: billede eller video alene på en mørk baggrund |
 | `src/motion.js` | Continia motion-tokens i JS (varigheder og easings) |
 | `src/styles.css` | Styles på Continia Front end-designsystemet |
