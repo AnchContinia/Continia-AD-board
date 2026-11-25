@@ -1011,3 +1011,104 @@ kbd {
   .tile { margin-bottom: 8px; }
   .listview__inner { padding-top: 132px; }
 }
+
+/* ------------------------------------------------------------ category picker */
+
+.catpick { position: relative; }
+.catpick[hidden] { display: none; }
+
+.chip--menu {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-right: 10px;
+  max-width: 240px;
+}
+
+.chip--menu span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chip--menu svg {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform var(--motion-duration-fast) var(--motion-ease-standard);
+}
+
+.chip--menu[aria-expanded="true"] svg { transform: rotate(180deg); }
+
+/* A category is chosen: the trigger reads as active, like a pressed chip. */
+.chip--menu.is-set {
+  background: rgba(143, 248, 255, 0.16);
+  border-color: transparent;
+  color: var(--text-on-brand);
+  font-weight: 600;
+}
+
+.menu--cats {
+  right: auto;
+  left: 0;
+  width: 280px;
+  max-height: min(480px, calc(100dvh - 120px));
+  overflow-y: auto;
+}
+
+.catlist {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.catlist button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--radius-input);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--motion-duration-fast) var(--motion-ease-standard);
+}
+
+.catlist button:hover { background: #e7eaf1; }
+.catlist button:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--c-tech-blue); }
+
+.catlist__dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid var(--c-tech-blue);
+}
+
+.catlist button[aria-pressed="true"] { font-weight: 600; }
+.catlist button[aria-pressed="true"] .catlist__dot { background: var(--c-tech-blue); }
+
+.catlist__name { flex: 1; min-width: 0; }
+
+.catlist__count {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.catlist li + li.catlist__sep { margin-top: 4px; padding-top: 4px; border-top: 1px solid #e7eaf1; }
+
+@media (max-width: 640px) {
+  .chip--menu { max-width: 150px; }
+}

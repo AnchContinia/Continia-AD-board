@@ -24,6 +24,16 @@
     </a>
 
     <div class="controls">
+      <div class="catpick" hidden>
+        <button class="chip chip--menu" type="button" data-cat-toggle aria-haspopup="true" aria-expanded="false" aria-controls="cat-menu">
+          <span data-cat-label>Alle kategorier</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5"/></svg>
+        </button>
+        <div class="menu menu--cats" id="cat-menu" hidden>
+          <ul class="catlist" aria-label="Kategori"></ul>
+        </div>
+      </div>
+
       <div class="chips" role="group" aria-label="Vis">
         <button class="chip" type="button" data-filter="all" aria-pressed="true">Alle</button>
         <button class="chip" type="button" data-filter="image" aria-pressed="false">Billeder</button>

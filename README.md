@@ -15,6 +15,14 @@ Læg dem i [`Assets/`](Assets). Den nemmeste vej er GitHub på nettet: **Add fil
 - Filnavnet bliver titlen: `sommer-kampagne_01.jpg` vises som "Sommer kampagne 01".
 - GitHub på nettet tager højst 25 MB pr. fil. Hold billeder under ca. 5 MB, så siden loader hurtigt.
 
+### Kategorier
+Hver ring er en kategori. Kategorierne vælges i **Alle kategorier** øverst på siden, i både orbit og liste. De ligger i [`categories.json`](categories.json):
+
+- `kategorier` er listen og rækkefølgen, inderste ring først.
+- `billeder` siger, hvilken kategori hvert billede hører til. Nøglen er stien under `Assets/`.
+- Flyt et billede ved at rette kategorinavnet ud for det. Tilføj en ny kategori ved at skrive den i `kategorier` og bruge navnet ud for billederne.
+- Nye billeder uden kategori havner i en ring med deres mappes navn, indtil de får en kategori.
+
 ### Videoer
 Skriv linket på en ny linje i [`videos.txt`](videos.txt):
 
@@ -37,7 +45,8 @@ Hvert push til `main` kører workflowet [Deploy moodboard](.github/workflows/pag
 | Flyv frem og tilbage | Scroll. Du flyver mod det, markøren peger på | Knib |
 | Flyt op, ned og til siden | Shift + træk, eller midterklik + træk | Træk med to fingre |
 | Flyvetilstand | Hold højreklik: musen drejer kameraet, `W` `S` frem/tilbage, `A` `D` til siden, `Q` `E` ned/op. Slip for at stoppe | |
-| Flyv frit | `W A S D` / piletaster, `Q` `E` ned/op, Shift for fart | |
+| Flyv frit | `W A S D` / piletaster, `Q` `E` ned/op | |
+| Flyv hurtigere | Hold `Shift` mens du flyver eller scroller | |
 | Åbn | Klik på et kort | Tryk på et kort |
 | I viseren | `←` `→` bladrer, `Esc` lukker | |
 | Tilbage til overblik | `H` eller sigtekorn-knappen | Sigtekorn-knappen |
@@ -63,6 +72,6 @@ Siden skal serveres over http. YouTube-embeds virker ikke fra `file://`.
 | `src/motion.js` | Continia motion-tokens i JS (varigheder og easings) |
 | `src/styles.css` | Styles på Continia Front end-designsystemet |
 | `src/config.js` | Repoet som "Tilføj"-knapperne linker til |
-| `scripts/build-manifest.mjs` | Scanner `Assets/` og `videos.txt` og skriver `content.json` |
+| `scripts/build-manifest.mjs` | Scanner `Assets/`, `categories.json` og `videos.txt` og skriver `content.json` |
 
 Design: Continia Front end-designsystemet. Mørk Tech Blue-grund, Innovation Blue kun som signal og motion-tokens til al timing. Viseren viser billedet uden ramme. `prefers-reduced-motion` stopper orbit og kameraflyvninger.

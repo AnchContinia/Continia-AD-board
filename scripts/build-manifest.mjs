@@ -12,6 +12,7 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const ASSETS_DIR = 'Assets';
 const VIDEOS_FILE = 'videos.txt';
 const OUT_FILE = 'content.json';
+const CATEGORIES_FILE = 'categories.json';
 
 const IMAGE_EXT = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.avif', '.svg']);
 const VIDEO_EXT = new Set(['.mp4', '.webm', '.m4v']);
@@ -180,6 +181,19 @@ async function readVideos() {
   return items;
 }
 
+// categories.json: { kategorier: [ordered names], billeder: { "<path under Assets>": "<name>" } }
+async function readCategories() {
+  try {
+    const raw = JSON.parse(await readFile(join(ROOT, CATEGORIES_FILE), 'utf8'));
+    return { order: raw.kategorier || [], byPath: raw.billeder || {} };
+  } catch (err) {
+    if (err.code !== 'ENOENT') console.warn(`${CATEGORIES_FILE} ignored: ${err.message}`);
+    return { order: [], byPath: {} };
+  }
+}
+
+const categories = await readCategories();
+
 async function readAssets() {
   const files = await walk(join(ROOT, ASSETS_DIR));
   const items = [];
@@ -192,7 +206,9 @@ async function readAssets() {
     const relFromRoot = relative(ROOT, full);
     const relFromAssets = relative(join(ROOT, ASSETS_DIR), full);
     const parts = relFromAssets.split(sep);
-    const group = parts.length > 1 ? parts[0] : null;
+    const folder = parts.length > 1 ? parts[0] : null;
+    // A category from categories.json wins; otherwise the subfolder is the ring.
+    const group = categories.byPath[parts.join('/')] || folder;
     const src = toUrlPath(relFromRoot);
 
     const name = basename(full, extname(full));
@@ -208,10 +224,16 @@ async function readAssets() {
       thumb: null,
     });
   }
-  // Root files first, then subfolders, each sorted by name.
+  // Categories in their listed order (inner ring first), then root files,
+  // then other subfolders by name.
+  const rank = (g) => {
+    const i = categories.order.indexOf(g);
+    if (i >= 0) return i;
+    return g === 'Moodboard' ? categories.order.length : categories.order.length + 1;
+  };
   items.sort((a, b) => {
-    const ar = a.group === 'Moodboard' ? 0 : 1;
-    const br = b.group === 'Moodboard' ? 0 : 1;
+    const ar = rank(a.group);
+    const br = rank(b.group);
     if (ar !== br) return ar - br;
     return collator.compare(a.group, b.group) || collator.compare(a.src, b.src);
   });

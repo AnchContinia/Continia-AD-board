@@ -581,6 +581,7 @@ const state = {
   cards: [],
   rings: [],
   filter: 'all',
+  category: null, // a ring/group name, or null for all
   hovered: null,
   viewerOpen: false,
   orbitScale: reduced ? 0 : 1,
@@ -645,6 +646,7 @@ chips.forEach((chip) => {
 
 function matchesFilter(card) {
   if (card.failed) return false;
+  if (state.category && card.data.group !== state.category) return false;
   return state.filter === 'all' || card.data.type === state.filter;
 }
 
@@ -905,7 +907,9 @@ canvas.addEventListener('wheel', (e) => {
   cancelFlight();
   setPointer(e);
   const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? window.innerHeight : 1;
-  const delta = clamp(e.deltaY * unit, -240, 240);
+  // macOS turns Shift + wheel into a sideways scroll; read it as forward/back.
+  const raw = e.shiftKey && Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+  const delta = clamp(raw * unit, -240, 240) * (e.shiftKey ? 2.5 : 1);
   // Fly along the ray under the cursor: whatever you point at, you approach.
   raycaster.setFromCamera(state.pointer, camera);
   flyImpulse(-delta * (e.ctrlKey ? 0.3 : 0.13), raycaster.ray.direction);
@@ -917,6 +921,7 @@ window.addEventListener('keydown', (e) => {
   if (state.viewerOpen || e.metaKey || e.ctrlKey || e.altKey) return;
   const tag = document.activeElement?.tagName;
   if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+  if (document.activeElement?.closest?.('.menu')) return; // menus own their keys
   const k = e.key.toLowerCase();
 
   if (k === 'l' && !e.repeat && listView) {
@@ -956,7 +961,7 @@ function applyKeys(dt) {
   if (!state.keys.size || state.viewerOpen) return;
   const k = state.keys;
   cameraAxes();
-  const accel = 70 * (k.has('shift') ? 2.5 : 1) * dt;
+  const accel = 70 * (k.has('shift') ? 3 : 1) * dt; // Shift: boost
   const f = (k.has('w') || k.has('arrowup') ? 1 : 0) - (k.has('s') || k.has('arrowdown') ? 1 : 0);
   const s = (k.has('d') || k.has('arrowright') ? 1 : 0) - (k.has('a') || k.has('arrowleft') ? 1 : 0);
   const u = (k.has('e') || k.has(' ') ? 1 : 0) - (k.has('q') || k.has('c') ? 1 : 0);
@@ -992,7 +997,7 @@ for (const p of layout.placed) {
   const mesh = new THREE.Mesh(planeGeo, mat);
   const size = cardSize(aspect);
   mesh.scale.set(size.w, size.h, 1);
-  const card = { ...p, mesh, mat, size, loaded: false, hover: 0, dim: 1, appear: 0 };
+  const card = { ...p, mesh, mat, size, loaded: false, hover: 0, dim: 1, appear: 0, focus: 0 };
   mesh.userData.card = card;
   scene.add(mesh);
   state.cards.push(card);
@@ -1083,6 +1088,99 @@ function setView(view, { instant = false } = {}) {
 }
 
 viewButtons.forEach((b) => b.addEventListener('click', () => setView(b.dataset.view)));
+
+// ---------------------------------------------------------------- category picker
+
+const catPick = $('.catpick');
+const catToggle = $('[data-cat-toggle]');
+const catLabel = $('[data-cat-label]');
+const catMenu = $('#cat-menu');
+const catList = catMenu.querySelector('.catlist');
+const catButtons = [];
+
+function setCatMenu(open) {
+  catMenu.hidden = !open;
+  catToggle.setAttribute('aria-expanded', String(open));
+  if (open) catButtons.find((b) => b.getAttribute('aria-pressed') === 'true')?.focus();
+}
+
+// Frame one group's rings from the home direction.
+function groupPose(g) {
+  const halfV = Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2);
+  const aspect = Math.max(camera.aspect, 0.9);
+  const d = Math.max(40, (g.ring.r + MAX_CARD_W) / (halfV * aspect) / 1.08);
+  return poseLookingAt(new THREE.Vector3(0, d * 0.32, d), new THREE.Vector3(0, 0, 0));
+}
+
+function setCategory(name) {
+  state.category = name;
+  catLabel.textContent = name || 'Alle kategorier';
+  catToggle.classList.toggle('is-set', Boolean(name));
+  catButtons.forEach((b) => b.setAttribute('aria-pressed', String((b.dataset.cat || null) === name)));
+  if (listView.built) {
+    listView.applyFilter(matchesFilter);
+    listRoot.scrollTo({ top: 0 });
+  }
+  if (state.view === 'orbit' && !state.viewerOpen) {
+    const g = layout.groups.find((x) => x.name === name);
+    flyTo(g ? groupPose(g) : cam.home, motion.duration.slower, ease.inOut);
+  }
+}
+
+function addCatButton(name, count) {
+  const li = document.createElement('li');
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.dataset.cat = name || '';
+  btn.setAttribute('aria-pressed', String(!name));
+  const dot = document.createElement('span');
+  dot.className = 'catlist__dot';
+  const label = document.createElement('span');
+  label.className = 'catlist__name';
+  label.textContent = name || 'Alle kategorier';
+  const n = document.createElement('span');
+  n.className = 'catlist__count';
+  n.textContent = String(count);
+  btn.append(dot, label, n);
+  btn.addEventListener('click', () => {
+    setCategory(name);
+    setCatMenu(false);
+    catToggle.focus();
+  });
+  li.append(btn);
+  catList.append(li);
+  catButtons.push(btn);
+  return li;
+}
+
+if (layout.groups.length > 1) {
+  addCatButton(null, state.cards.length);
+  layout.groups.forEach((g, i) => {
+    const li = addCatButton(g.name, g.count);
+    if (i === 0) li.classList.add('catlist__sep');
+  });
+  catPick.hidden = false;
+}
+
+catToggle.addEventListener('click', (e) => {
+  e.stopPropagation();
+  setCatMenu(catMenu.hidden);
+});
+document.addEventListener('click', (e) => {
+  if (!catMenu.hidden && !catPick.contains(e.target)) setCatMenu(false);
+});
+catMenu.addEventListener('keydown', (e) => {
+  const i = catButtons.indexOf(document.activeElement);
+  if (e.key === 'Escape') {
+    e.stopPropagation();
+    setCatMenu(false);
+    catToggle.focus();
+  } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    const step = e.key === 'ArrowDown' ? 1 : -1;
+    catButtons[(i + step + catButtons.length) % catButtons.length].focus();
+  }
+});
 
 let savedView = null;
 try { savedView = localStorage.getItem('adboard:view'); } catch { /* private mode */ }
@@ -1196,7 +1294,10 @@ function updateCards(dt) {
     card.dim = damp(card.dim, dimTo, 1000 / motion.duration.moderate, dt);
     card.appear = damp(card.appear, card.failed ? 0 : card.loaded ? 1 : 0.4, appearRate, dt);
 
-    const s = 1 + card.hover * 0.06;
+    // A chosen category grows its cards so they stand out across the system.
+    const focusTo = state.category && matchesFilter(card) ? 1 : 0;
+    card.focus = damp(card.focus, focusTo, 1000 / motion.duration.slow, dt);
+    const s = (1 + card.hover * 0.06) * (1 + card.focus * 0.9);
     card.mesh.scale.set(card.size.w * s, card.size.h * s, 1);
     card.mat.uniforms.uHover.value = card.hover;
     card.mat.uniforms.uOpacity.value = card.appear * card.dim;
