@@ -1,0 +1,16 @@
+# Video-links til moodboardet
+#
+# Én video pr. linje. Linjer der starter med # bliver ignoreret.
+#
+#   URL
+#   URL | Titel
+#   URL | Titel | Gruppe
+#
+# Understøtter YouTube (også Shorts), Vimeo og direkte .mp4/.webm-links.
+# Uden titel henter siden titlen fra YouTube/Vimeo automatisk.
+# Uden gruppe havner videoen i ringen "Video".
+#
+# Eksempler:
+#   https://www.youtube.com/watch?v=XXXXXXXXXXX
+#   https://youtu.be/XXXXXXXXXXX | Kampagnefilm 2026
+#   https://vimeo.com/123456789 | Reference | Inspiration
