@@ -12,6 +12,7 @@ import { UPLOAD_URL, VIDEOS_EDIT_URL } from './config.js';
 const C = {
   techBlue: '#052975',
   deep: '#041e58',
+  space: '#020a26', // fog: between the backdrop's top and bottom
   tb85: '#2a4989',
   tb50: '#8193b9',
   innovation: '#8ff8ff',
@@ -70,7 +71,7 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 renderer.setClearColor(0x000000, 0);
 
 const scene = new THREE.Scene();
-scene.fog = new THREE.Fog(C.deep, 160, 560);
+scene.fog = new THREE.Fog(C.space, 160, 560);
 
 const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 3000);
 
@@ -787,7 +788,10 @@ canvas.addEventListener('pointerdown', (e) => {
   cancelFlight();
   if (pointers.size === 1) {
     drag.active = true;
-    drag.mode = e.button === 2 || e.button === 1 || e.shiftKey ? 'pan' : 'look';
+    // Right button: fly mode. The pointer locks, the mouse turns the camera
+    // and W A S D / Q E fly, until the button is released.
+    drag.mode = e.button === 2 ? 'fly' : e.button === 1 || e.shiftKey ? 'pan' : 'look';
+    if (drag.mode === 'fly') lockPointer();
     drag.startX = drag.lastX = e.clientX;
     drag.startY = drag.lastY = e.clientY;
     drag.moved = false;
@@ -817,13 +821,19 @@ canvas.addEventListener('pointermove', (e) => {
     return;
   }
 
-  const dx = e.clientX - drag.lastX;
-  const dy = e.clientY - drag.lastY;
+  const locked = document.pointerLockElement === canvas;
+  const dx = locked ? e.movementX : e.clientX - drag.lastX;
+  const dy = locked ? e.movementY : e.clientY - drag.lastY;
   drag.lastX = e.clientX;
   drag.lastY = e.clientY;
   if (Math.hypot(e.clientX - drag.startX, e.clientY - drag.startY) > 5) drag.moved = true;
 
-  if (drag.mode === 'pan') {
+  if (drag.mode === 'fly') {
+    drag.moved = true;
+    const k = 0.0026;
+    cam.yawTarget -= dx * k;
+    cam.pitchTarget = clamp(cam.pitchTarget - dy * k, -1.4, 1.4);
+  } else if (drag.mode === 'pan') {
     panBy(dx, dy);
   } else {
     const k = isTouch ? 0.005 : 0.0034;
@@ -832,10 +842,26 @@ canvas.addEventListener('pointermove', (e) => {
   }
 });
 
+function lockPointer() {
+  try {
+    const req = canvas.requestPointerLock({ unadjustedMovement: true });
+    // Chrome returns a promise; it rejects where raw input is unsupported or
+    // when the lock was left with Esc a moment ago. Mouse look still works unlocked.
+    if (req && req.catch) req.catch(() => canvas.requestPointerLock()?.catch?.(() => {}));
+  } catch {
+    /* no pointer lock: look with the visible cursor */
+  }
+}
+
+function unlockPointer() {
+  if (document.pointerLockElement === canvas) document.exitPointerLock();
+}
+
 function endPointer(e) {
-  const wasClick = drag.active && !drag.moved && pointers.size === 1 && performance.now() - drag.t0 < 500;
+  const wasClick = drag.active && drag.mode === 'look' && !drag.moved && pointers.size === 1 && performance.now() - drag.t0 < 500;
   pointers.delete(e.pointerId);
   if (pointers.size === 0) {
+    if (drag.mode === 'fly') unlockPointer();
     drag.active = false;
   } else if (pointers.size === 1 && drag.mode === 'pinch') {
     const [p] = [...pointers.values()];
@@ -899,7 +925,14 @@ window.addEventListener('keydown', (e) => {
   }
 });
 window.addEventListener('keyup', (e) => state.keys.delete(e.key.toLowerCase()));
-window.addEventListener('blur', () => state.keys.clear());
+window.addEventListener('blur', () => {
+  state.keys.clear();
+  if (drag.mode === 'fly') {
+    unlockPointer();
+    drag.active = false;
+    pointers.clear();
+  }
+});
 
 function applyKeys(dt) {
   if (!state.keys.size || state.viewerOpen) return;
@@ -907,11 +940,8 @@ function applyKeys(dt) {
   cameraAxes();
   const accel = 70 * (k.has('shift') ? 2.5 : 1) * dt;
   const f = (k.has('w') || k.has('arrowup') ? 1 : 0) - (k.has('s') || k.has('arrowdown') ? 1 : 0);
-  const s = (k.has('arrowright') ? 1 : 0) - (k.has('arrowleft') ? 1 : 0);
+  const s = (k.has('d') || k.has('arrowright') ? 1 : 0) - (k.has('a') || k.has('arrowleft') ? 1 : 0);
   const u = (k.has('e') || k.has(' ') ? 1 : 0) - (k.has('q') || k.has('c') ? 1 : 0);
-  // A / D turn the camera (yaw); the arrows strafe.
-  const turn = (k.has('a') ? 1 : 0) - (k.has('d') ? 1 : 0);
-  cam.yawTarget += turn * (k.has('shift') ? 2.2 : 1.3) * dt;
   cam.vel.addScaledVector(forward, f * accel);
   cam.vel.addScaledVector(right, s * accel);
   cam.vel.addScaledVector(up, u * accel);
@@ -1091,7 +1121,9 @@ function updateCards(dt) {
 
     const isHover = state.hovered === card;
     card.hover = damp(card.hover, isHover ? 1 : 0, 1000 / motion.duration.fast, dt);
-    card.dim = damp(card.dim, matchesFilter(card) ? 1 : 0.08, 1000 / motion.duration.moderate, dt);
+    // The open card steps aside so the viewer's image has nothing behind it.
+    const dimTo = !matchesFilter(card) ? 0.08 : state.viewerOpen && state.current === card ? 0 : 1;
+    card.dim = damp(card.dim, dimTo, 1000 / motion.duration.moderate, dt);
     card.appear = damp(card.appear, card.failed ? 0 : card.loaded ? 1 : 0.4, appearRate, dt);
 
     const s = 1 + card.hover * 0.06;

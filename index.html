@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Continia AD Board</title>
   <meta name="description" content="Continia AD Board: et 3D-moodboard med billeder og video, du kan flyve igennem.">
-  <meta name="theme-color" content="#052975">
+  <meta name="theme-color" content="#031034">
   <link rel="icon" href="brand/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="src/styles.css">
   <script type="importmap">
@@ -14,7 +14,7 @@
   <script type="module" src="src/main.js"></script>
 </head>
 <body>
-  <canvas id="scene" tabindex="0" aria-label="3D-moodboard. Træk for at kigge rundt, scroll for at flyve, klik på et kort for at åbne det. Brug listen over indhold for at åbne kort med tastaturet."></canvas>
+  <canvas id="scene" tabindex="0" aria-label="3D-moodboard. Træk for at kigge rundt, scroll for at flyve, hold højreklik og brug W A S D for at styre, klik på et kort for at åbne det. Brug listen over indhold for at åbne kort med tastaturet."></canvas>
 
   <header class="hud hud--top">
     <a class="brand" href="./" aria-label="Continia AD Board, forfra">
@@ -69,9 +69,8 @@
     <ul class="hints" aria-label="Styring">
       <li class="hint--mouse"><kbd>Træk</kbd>kig rundt</li>
       <li class="hint--mouse"><kbd>Scroll</kbd>flyv mod markøren</li>
-      <li class="hint--mouse"><kbd>Højreklik + træk</kbd>flyt op, ned og til siden</li>
-      <li class="hint--mouse"><kbd>W S</kbd><kbd>Q E</kbd>flyv</li>
-      <li class="hint--mouse"><kbd>A D</kbd>drej</li>
+      <li class="hint--mouse"><kbd>Hold højreklik</kbd>styr med musen</li>
+      <li class="hint--mouse"><kbd>W A S D</kbd><kbd>Q E</kbd>flyv</li>
       <li class="hint--touch"><kbd>Træk</kbd>kig rundt</li>
       <li class="hint--touch"><kbd>Knib</kbd>flyv</li>
       <li class="hint--touch"><kbd>To fingre</kbd>flyt</li>

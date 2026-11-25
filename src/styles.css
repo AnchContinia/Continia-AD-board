@@ -5,6 +5,9 @@
   /* Colour */
   --c-tech-blue: #052975;
   --c-bg-brand-deep: #041e58;
+  /* Board backdrop: Tech Blue pushed toward black, so the content carries the colour. */
+  --c-space-top: #031034;
+  --c-space-bottom: #010514;
   --c-innovation-blue: #8ff8ff;
   --c-innovation-blue-50: #c6fbff;
   --c-light-blue: #def5ff;
@@ -16,7 +19,7 @@
   --text-on-brand: #ffffff;
   --text-on-brand-muted: rgba(255, 255, 255, 0.78);
   --hairline-on-brand: rgba(255, 255, 255, 0.24);
-  --color-scrim: rgba(4, 20, 52, 0.62);
+  --color-scrim: rgba(1, 5, 20, 0.86);
 
   /* Type */
   --font: "Alliance No.2", "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
@@ -70,11 +73,11 @@ body {
   margin: 0;
   height: 100%;
   overflow: hidden;
-  background: var(--c-bg-brand-deep);
+  background: var(--c-space-bottom);
 }
 
 body {
-  background: linear-gradient(180deg, var(--c-tech-blue) 0%, var(--c-bg-brand-deep) 100%);
+  background: linear-gradient(180deg, var(--c-space-top) 0%, var(--c-space-bottom) 100%);
   color: var(--text-on-brand);
   font-family: var(--font);
   font-size: 16px;
@@ -146,12 +149,12 @@ svg { display: block; overflow: visible; }
 
 .hud--top::before {
   bottom: -32px;
-  background: linear-gradient(180deg, rgba(5, 41, 117, 0.85) 0%, rgba(5, 41, 117, 0) 100%);
+  background: linear-gradient(180deg, rgba(3, 16, 52, 0.85) 0%, rgba(3, 16, 52, 0) 100%);
 }
 
 .hud--bottom::before {
   top: -48px;
-  background: linear-gradient(0deg, rgba(4, 30, 88, 0.92) 0%, rgba(4, 30, 88, 0) 100%);
+  background: linear-gradient(0deg, rgba(1, 5, 20, 0.92) 0%, rgba(1, 5, 20, 0) 100%);
 }
 
 .chips[hidden] { display: none; }
@@ -586,14 +589,11 @@ kbd {
   transition: opacity var(--motion-duration-base) var(--motion-ease-in);
 }
 
-/* Pop-up window: the brand's signature frame. 14px radius, clips its own content. */
+/* The media stands alone on the scrim: no window chrome. */
 .popup {
   min-width: 0;
-  border-radius: var(--radius-popup);
+  border-radius: 8px;
   overflow: hidden;
-  background: #020f2e;
-  outline: 1px solid var(--c-innovation-blue);
-  outline-offset: -1px;
   box-shadow: var(--shadow-dark-photo);
 }
 
@@ -605,14 +605,14 @@ kbd {
   from { opacity: 0; transform: translateY(var(--motion-distance-md)) scale(0.98); }
 }
 
+/* Kept for screen readers only: it names the dialog. */
 .popup__bar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  height: 44px;
-  padding: 0 16px;
-  background: var(--c-tech-blue);
-  color: var(--text-on-brand);
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .popup__bar img {
@@ -664,7 +664,7 @@ kbd {
   width: auto;
   height: auto;
   max-width: min(1400px, calc(100vw - 2 * var(--page-pad) - 2 * (44px + 24px)));
-  max-height: calc(100dvh - 220px);
+  max-height: calc(100dvh - 176px);
   min-width: 120px;
   min-height: 120px;
   object-fit: contain;
@@ -681,7 +681,7 @@ kbd {
 }
 
 .frame16x9 {
-  width: min(1200px, calc(100vw - 2 * var(--page-pad) - 2 * (44px + 24px)), calc((100dvh - 220px) * 16 / 9));
+  width: min(1200px, calc(100vw - 2 * var(--page-pad) - 2 * (44px + 24px)), calc((100dvh - 176px) * 16 / 9));
   aspect-ratio: 16 / 9;
   background: #000;
 }

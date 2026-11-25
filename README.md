@@ -35,9 +35,9 @@ Hvert push til `main` kører workflowet [Deploy moodboard](.github/workflows/pag
 |---|---|---|
 | Kig rundt | Træk | Træk med én finger |
 | Flyv frem og tilbage | Scroll. Du flyver mod det, markøren peger på | Knib |
-| Flyt op, ned og til siden | Højreklik + træk, eller Shift + træk | Træk med to fingre |
-| Flyv frit | `W` `S` / `↑` `↓` frem og tilbage, `←` `→` til siden, `Q` `E` ned/op, Shift for fart | |
-| Drej kameraet | `A` `D` (Shift drejer hurtigere) | |
+| Flyt op, ned og til siden | Shift + træk, eller midterklik + træk | Træk med to fingre |
+| Flyvetilstand | Hold højreklik: musen drejer kameraet, `W` `S` frem/tilbage, `A` `D` til siden, `Q` `E` ned/op. Slip for at stoppe | |
+| Flyv frit | `W A S D` / piletaster, `Q` `E` ned/op, Shift for fart | |
 | Åbn | Klik på et kort | Tryk på et kort |
 | I viseren | `←` `→` bladrer, `Esc` lukker | |
 | Tilbage til overblik | `H` eller sigtekorn-knappen | Sigtekorn-knappen |
@@ -57,10 +57,10 @@ Siden skal serveres over http. YouTube-embeds virker ikke fra `file://`.
 |---|---|
 | `index.html` | Siden: HUD, viser og tilgængelig indholdsliste |
 | `src/main.js` | 3D-scenen (Three.js 0.170): layout i ringe, kamera, input, thumbnails |
-| `src/viewer.js` | Viseren: Continias pop-up window-ramme om billede eller video |
+| `src/viewer.js` | Viseren: billede eller video alene på en mørk baggrund |
 | `src/motion.js` | Continia motion-tokens i JS (varigheder og easings) |
 | `src/styles.css` | Styles på Continia Front end-designsystemet |
 | `src/config.js` | Repoet som "Tilføj"-knapperne linker til |
 | `scripts/build-manifest.mjs` | Scanner `Assets/` og `videos.txt` og skriver `content.json` |
 
-Design: Continia Front end-designsystemet. Tech Blue-grund, Innovation Blue kun som signal, pop-up window-rammen og motion-tokens til al timing. `prefers-reduced-motion` stopper orbit og kameraflyvninger.
+Design: Continia Front end-designsystemet. Mørk Tech Blue-grund, Innovation Blue kun som signal og motion-tokens til al timing. Viseren viser billedet uden ramme. `prefers-reduced-motion` stopper orbit og kameraflyvninger.

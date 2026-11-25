@@ -1,4 +1,4 @@
-// The viewer: Continia's pop-up window frame around one image or video.
+// The viewer: one image or video on the scrim, with prev/next and close.
 
 import { motion } from './motion.js';
 
