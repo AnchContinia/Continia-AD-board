@@ -10,22 +10,20 @@ permissions:
   pages: write
   id-token: write
 
+# One deploy at a time. A running deploy is allowed to finish; the newest queued run goes next.
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Build content.json from Assets/ and videos.txt
         run: node scripts/build-manifest.mjs
@@ -42,5 +40,25 @@ jobs:
         with:
           path: _site
 
+  # Deploying in its own job (GitHub's recommended layout) means the uploaded
+  # artifact is fully registered before deploy-pages looks it up.
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url || steps.retry.outputs.page_url }}
+    steps:
       - id: deployment
+        uses: actions/deploy-pages@v5
+        continue-on-error: true
+
+      # GitHub Pages sometimes answers "Deployment failed, try again later".
+      # Try once more before calling the run failed.
+      - name: Wait before retrying
+        if: steps.deployment.outcome == 'failure'
+        run: sleep 30
+
+      - id: retry
+        if: steps.deployment.outcome == 'failure'
         uses: actions/deploy-pages@v5
