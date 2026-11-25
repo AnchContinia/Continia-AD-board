@@ -36,7 +36,8 @@ Hvert push til `main` kører workflowet [Deploy moodboard](.github/workflows/pag
 | Kig rundt | Træk | Træk med én finger |
 | Flyv frem og tilbage | Scroll. Du flyver mod det, markøren peger på | Knib |
 | Flyt op, ned og til siden | Højreklik + træk, eller Shift + træk | Træk med to fingre |
-| Flyv frit | `W A S D` / piletaster, `Q` `E` ned/op, Shift for fart | |
+| Flyv frit | `W` `S` / `↑` `↓` frem og tilbage, `←` `→` til siden, `Q` `E` ned/op, Shift for fart | |
+| Drej kameraet | `A` `D` (Shift drejer hurtigere) | |
 | Åbn | Klik på et kort | Tryk på et kort |
 | I viseren | `←` `→` bladrer, `Esc` lukker | |
 | Tilbage til overblik | `H` eller sigtekorn-knappen | Sigtekorn-knappen |

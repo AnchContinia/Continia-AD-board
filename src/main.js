@@ -907,8 +907,11 @@ function applyKeys(dt) {
   cameraAxes();
   const accel = 70 * (k.has('shift') ? 2.5 : 1) * dt;
   const f = (k.has('w') || k.has('arrowup') ? 1 : 0) - (k.has('s') || k.has('arrowdown') ? 1 : 0);
-  const s = (k.has('d') || k.has('arrowright') ? 1 : 0) - (k.has('a') || k.has('arrowleft') ? 1 : 0);
+  const s = (k.has('arrowright') ? 1 : 0) - (k.has('arrowleft') ? 1 : 0);
   const u = (k.has('e') || k.has(' ') ? 1 : 0) - (k.has('q') || k.has('c') ? 1 : 0);
+  // A / D turn the camera (yaw); the arrows strafe.
+  const turn = (k.has('a') ? 1 : 0) - (k.has('d') ? 1 : 0);
+  cam.yawTarget += turn * (k.has('shift') ? 2.2 : 1.3) * dt;
   cam.vel.addScaledVector(forward, f * accel);
   cam.vel.addScaledVector(right, s * accel);
   cam.vel.addScaledVector(up, u * accel);
