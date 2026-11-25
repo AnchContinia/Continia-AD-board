@@ -4,7 +4,7 @@
 
 const PROVIDER_LABEL = { youtube: 'YouTube', vimeo: 'Vimeo', file: 'Videofil' };
 
-const PLAY_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6.5v11l9-5.5z"/></svg>';
+
 
 function kindLabel(d) {
   return d.type === 'image' ? 'Billede' : `Video · ${PROVIDER_LABEL[d.provider] || 'Video'}`;
@@ -80,7 +80,10 @@ export class ListView {
     if (d.type === 'video') {
       const play = document.createElement('span');
       play.className = 'tile__play';
-      play.innerHTML = PLAY_SVG;
+      const icon = document.createElement('i');
+      icon.className = 'fa-light fa-play';
+      icon.setAttribute('aria-hidden', 'true');
+      play.append(icon);
       tile.append(play);
     }
 

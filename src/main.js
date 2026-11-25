@@ -135,7 +135,58 @@ scene.add(makeStars());
 const shared = {
   fadeNear: { value: 220 },
   fadeFar: { value: 520 },
+  badge: { value: null }, // fa-light fa-play from the Continia Kit, as an alpha mask
+  hasBadge: { value: 0 },
 };
+
+// Video cards wear Font Awesome's light play icon. WebGL can't use the icon font
+// directly, so the glyph is drawn once into a canvas and shared by every card.
+async function iconGlyph(name, weight = 300) {
+  const probe = document.createElement('i');
+  probe.className = `fa-light fa-${name}`;
+  probe.setAttribute('aria-hidden', 'true');
+  probe.style.cssText = 'position:absolute;left:-9999px;top:0';
+  document.body.append(probe);
+  try {
+    // The kit injects its stylesheet asynchronously; wait for the icon rule to land.
+    for (let i = 0; i < 100; i++) {
+      const content = getComputedStyle(probe, '::before').content;
+      const m = content && content.match(/^"([^"]+)"/);
+      if (m) {
+        const family = getComputedStyle(probe, '::before').fontFamily;
+        await document.fonts.load(`${weight} 96px ${family}`, m[1]);
+        return { char: m[1], font: `${weight} 96px ${family}` };
+      }
+      await new Promise((r) => setTimeout(r, 100));
+    }
+    return null;
+  } finally {
+    probe.remove();
+  }
+}
+
+async function makeBadgeTexture() {
+  const glyph = await iconGlyph('play');
+  if (!glyph) return; // kit unreachable: video cards keep the plain disc
+  const size = 256;
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const ctx = c.getContext('2d');
+  ctx.font = glyph.font;
+  const m = ctx.measureText(glyph.char);
+  // Centre the glyph's ink box, then scale it to sit inside the disc.
+  const w = m.actualBoundingBoxLeft + m.actualBoundingBoxRight;
+  const h = m.actualBoundingBoxAscent + m.actualBoundingBoxDescent;
+  const k = (size * 0.36) / Math.max(w, h);
+  ctx.translate(size / 2, size / 2);
+  ctx.scale(k, k);
+  ctx.fillStyle = '#fff';
+  ctx.fillText(glyph.char, -w / 2 + m.actualBoundingBoxLeft + w * 0.06, -h / 2 + m.actualBoundingBoxAscent);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.NoColorSpace;
+  shared.badge.value = tex;
+  shared.hasBadge.value = 1;
+}
 
 const cardVertex = /* glsl */ `
   varying vec2 vUv;
@@ -158,6 +209,8 @@ const cardFragment = /* glsl */ `
   uniform float uHover;
   uniform float uOpacity;
   uniform float uVideo;
+  uniform sampler2D uBadge;
+  uniform float uHasBadge;
   uniform float uFadeNear;
   uniform float uFadeFar;
   varying vec2 vUv;
@@ -166,16 +219,6 @@ const cardFragment = /* glsl */ `
   float sdRoundBox(vec2 p, vec2 b, float r) {
     vec2 q = abs(p) - b + r;
     return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;
-  }
-
-  // Equilateral triangle, apex along +y (Inigo Quilez).
-  float sdTriangle(vec2 p, float r) {
-    const float k = 1.7320508;
-    p.x = abs(p.x) - r;
-    p.y = p.y + r / k;
-    if (p.x + k * p.y > 0.0) p = vec2(p.x - k * p.y, -k * p.x - p.y) / 2.0;
-    p.x -= clamp(p.x, -2.0 * r, 0.0);
-    return -length(p) * sign(p.y);
   }
 
   void main() {
@@ -202,9 +245,11 @@ const cardFragment = /* glsl */ `
       float dc = length(p) - 0.13;
       float disc = 1.0 - smoothstep(-aa, aa, dc);
       col = mix(col, vec3(0.0196, 0.1608, 0.4588), disc * 0.9);
-      float dt = sdTriangle(vec2(p.y, p.x - 0.01), 0.05);
-      float tri = 1.0 - smoothstep(-aa, aa, dt);
-      col = mix(col, mix(vec3(1.0), uAccent, uHover), tri);
+      if (uHasBadge > 0.5) {
+        // The disc's square (diameter 0.26) maps onto the badge texture.
+        float g = texture2D(uBadge, clamp(p / 0.26 + 0.5, 0.0, 1.0)).a * disc;
+        col = mix(col, mix(vec3(1.0), uAccent, uHover), g);
+      }
     }
 
     // Fade into the distance, and fade out as the camera flies through a card.
@@ -227,6 +272,8 @@ function makeCardMaterial(isVideo, aspect) {
       uHover: { value: 0 },
       uOpacity: { value: 0 },
       uVideo: { value: isVideo ? 1 : 0 },
+      uBadge: shared.badge,
+      uHasBadge: shared.hasBadge,
       uFadeNear: shared.fadeNear,
       uFadeFar: shared.fadeFar,
     },
@@ -987,6 +1034,7 @@ function pickAt(ndc) {
 
 // ---------------------------------------------------------------- build the scene
 
+makeBadgeTexture().catch(() => {});
 const items = await fetchManifest();
 const layout = buildLayout(items);
 state.rings = layout.rings;

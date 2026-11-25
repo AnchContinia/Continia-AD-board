@@ -7,6 +7,8 @@
   <meta name="description" content="Continia AD Board: et 3D-moodboard med billeder og video, du kan flyve igennem.">
   <meta name="theme-color" content="#031034">
   <link rel="icon" href="brand/favicon.svg" type="image/svg+xml">
+  <!-- Continia's Font Awesome Pro Kit ("Continia Icons 2026"). Icons are classic light only. -->
+  <script src="https://kit.fontawesome.com/c11880975e.js" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="src/styles.css">
   <script type="importmap">
     { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js" } }
@@ -27,7 +29,7 @@
       <div class="catpick" hidden>
         <button class="chip chip--menu" type="button" data-cat-toggle aria-haspopup="true" aria-expanded="false" aria-controls="cat-menu">
           <span data-cat-label>Alle kategorier</span>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5"/></svg>
+          <i class="fa-light fa-chevron-down" aria-hidden="true"></i>
         </button>
         <div class="menu menu--cats" id="cat-menu" hidden>
           <ul class="catlist" aria-label="Kategori"></ul>
@@ -42,13 +44,13 @@
 
       <div class="add">
         <button class="btn btn--innovation" type="button" data-add aria-haspopup="true" aria-expanded="false" aria-controls="add-menu">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          <i class="fa-light fa-plus" aria-hidden="true"></i>
           Tilføj
         </button>
         <div class="menu" id="add-menu" hidden>
           <a class="menu__item" data-upload target="_blank" rel="noopener">
             <span class="menu__icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><circle cx="9" cy="10" r="1.75"/><path d="M20.5 16l-5-5-9 8.5"/></svg>
+              <i class="fa-light fa-images"></i>
             </span>
             <span>
               <span class="menu__title">Upload billeder</span>
@@ -57,7 +59,7 @@
           </a>
           <a class="menu__item" data-videos target="_blank" rel="noopener">
             <span class="menu__icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="M10.5 9.5v5l4.5-2.5z"/></svg>
+              <i class="fa-light fa-clapperboard-play"></i>
             </span>
             <span>
               <span class="menu__title">Tilføj video-link</span>
@@ -93,11 +95,11 @@
     <div class="viewswitch" role="group" aria-label="Visning" data-active="orbit">
       <span class="viewswitch__thumb" aria-hidden="true"></span>
       <button type="button" data-view="orbit" aria-pressed="true" title="Orbit (L skifter)">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="2.5"/><ellipse cx="12" cy="12" rx="9.5" ry="4.5" transform="rotate(-24 12 12)"/></svg>
+        <i class="fa-light fa-solar-system" aria-hidden="true"></i>
         Orbit
       </button>
       <button type="button" data-view="list" aria-pressed="false" title="Liste (L skifter)">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="7" height="9" rx="1.5"/><rect x="13" y="4" width="7" height="5" rx="1.5"/><rect x="4" y="15" width="7" height="5" rx="1.5"/><rect x="13" y="11" width="7" height="9" rx="1.5"/></svg>
+        <i class="fa-light fa-grid-2" aria-hidden="true"></i>
         Liste
       </button>
     </div>
@@ -105,7 +107,7 @@
     <div class="status">
       <span class="status__count" data-status aria-live="polite"></span>
       <button class="btn btn--ghost-dark btn--round" type="button" data-home aria-label="Tilbage til overblik (H)" title="Tilbage til overblik (H)">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3"/></svg>
+        <i class="fa-light fa-crosshairs" aria-hidden="true"></i>
       </button>
     </div>
   </footer>
@@ -123,12 +125,12 @@
     <div class="viewer__scrim"></div>
 
     <button class="btn btn--ghost-dark btn--round viewer__close" type="button" data-close aria-label="Luk (Esc)">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      <i class="fa-light fa-xmark" aria-hidden="true"></i>
     </button>
 
     <div class="viewer__stage">
       <button class="btn btn--ghost-dark btn--round viewer__nav" type="button" data-prev aria-label="Forrige (venstre pil)">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5L8 12l6.5 6.5"/></svg>
+        <i class="fa-light fa-chevron-left" aria-hidden="true"></i>
       </button>
 
       <div class="popup" role="dialog" aria-modal="true" aria-labelledby="viewer-title">
@@ -142,7 +144,7 @@
       </div>
 
       <button class="btn btn--ghost-dark btn--round viewer__nav" type="button" data-next aria-label="Næste (højre pil)">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 5.5L16 12l-6.5 6.5"/></svg>
+        <i class="fa-light fa-chevron-right" aria-hidden="true"></i>
       </button>
     </div>
 

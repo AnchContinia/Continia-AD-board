@@ -74,4 +74,6 @@ Siden skal serveres over http. YouTube-embeds virker ikke fra `file://`.
 | `src/config.js` | Repoet som "Tilføj"-knapperne linker til |
 | `scripts/build-manifest.mjs` | Scanner `Assets/`, `categories.json` og `videos.txt` og skriver `content.json` |
 
+Ikoner: Font Awesome Light fra Continias Pro-kit (se [`.font-awesome.md`](.font-awesome.md)). Repoet indeholder ingen Font Awesome-filer, ikonerne hentes fra kittet.
+
 Design: Continia Front end-designsystemet. Mørk Tech Blue-grund, Innovation Blue kun som signal og motion-tokens til al timing. Viseren viser billedet uden ramme. `prefers-reduced-motion` stopper orbit og kameraflyvninger.
