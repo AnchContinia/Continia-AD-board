@@ -1077,7 +1077,7 @@ for (const p of layout.placed) {
   state.cards.push(card);
 }
 
-// Centre: the Continia mark and the board's name.
+// Centre: the Continia mark.
 const centre = new THREE.Group();
 scene.add(centre);
 makeLogoSprite(8).then((logo) => {
@@ -1088,14 +1088,7 @@ makeLogoSprite(8).then((logo) => {
 const ringLabels = []; // category labels, moved with their ring when the tilt changes
 // The labels are drawn once into canvases, so Alliance must be loaded first;
 // fonts.ready alone would not fetch a face no DOM text has asked for yet.
-Promise.all([
-  document.fonts.load('600 64px "Alliance No.2"'),
-  document.fonts.load('600 44px "Alliance No.2"'),
-]).catch(() => {}).then(() => document.fonts.ready).then(() => {
-  const title = makeLabelSprite('AD BOARD', 1.9, { size: 64, weight: 600, tracking: 0.3, color: 'rgba(255,255,255,0.86)' });
-  title.position.set(0, -4.6, 0);
-  centre.add(title);
-
+document.fonts.load('600 44px "Alliance No.2"').catch(() => {}).then(() => document.fonts.ready).then(() => {
   for (const g of layout.groups) {
     const label = makeLabelSprite(`${g.name.toUpperCase()}  ·  ${g.count}`, 1.8, { color: 'rgba(143,248,255,0.9)' });
     const a = Math.PI / 2;
