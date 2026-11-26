@@ -96,6 +96,8 @@ export class Viewer {
       video.src = d.src;
       video.controls = true;
       video.autoplay = true;
+      video.muted = true; // starts silent; people turn sound on themselves in the controls
+      video.defaultMuted = true;
       video.playsInline = true;
       frame.append(video);
     }

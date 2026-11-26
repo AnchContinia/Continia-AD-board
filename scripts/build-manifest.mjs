@@ -83,7 +83,7 @@ function parseVideoUrl(raw) {
     }
     if (!id || !/^[\w-]{11}$/.test(id)) return null;
     const start = parseStart(u.searchParams.get('t') || u.searchParams.get('start'));
-    const params = new URLSearchParams({ autoplay: '1', rel: '0', playsinline: '1' });
+    const params = new URLSearchParams({ autoplay: '1', mute: '1', rel: '0', playsinline: '1' });
     if (start) params.set('start', String(start));
     return {
       provider: 'youtube',
@@ -100,7 +100,7 @@ function parseVideoUrl(raw) {
     if (!m) return null;
     const id = m[1];
     const hash = m[2] || u.searchParams.get('h') || '';
-    const params = new URLSearchParams({ autoplay: '1', dnt: '1' });
+    const params = new URLSearchParams({ autoplay: '1', muted: '1', dnt: '1' });
     if (hash) params.set('h', hash);
     const pageUrl = `https://vimeo.com/${id}${hash ? `/${hash}` : ''}`;
     return {
