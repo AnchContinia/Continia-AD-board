@@ -403,7 +403,9 @@ function buildLayout(items) {
   for (const [name, list] of groups) {
     const rnd = mulberry32(hashStr(name));
     const groupQ = new THREE.Quaternion().setFromEuler(
-      new THREE.Euler((rnd() - 0.5) * 0.44, rnd() * Math.PI * 2, (rnd() - 0.5) * 0.36, 'YXZ'),
+      // Each category leans 17–34° out of the horizontal, either way, so the
+      // system stands up instead of reading as a flat plate.
+      new THREE.Euler((rnd() < 0.5 ? -1 : 1) * (0.3 + rnd() * 0.3), rnd() * Math.PI * 2, (rnd() - 0.5) * 0.5, 'YXZ'),
     );
     const ownRings = [];
     let i = 0;
@@ -416,7 +418,7 @@ function buildLayout(items) {
       const q = ownRings.length === 0
         ? groupQ.clone()
         : groupQ.clone().multiply(new THREE.Quaternion().setFromEuler(
-          new THREE.Euler((rnd() - 0.5) * 0.7, rnd() * Math.PI * 2, (rnd() - 0.5) * 0.7, 'YXZ'),
+          new THREE.Euler((rnd() - 0.5) * 0.5, rnd() * Math.PI * 2, (rnd() - 0.5) * 0.5, 'YXZ'),
         ));
       const ring = {
         r,
