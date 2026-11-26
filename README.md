@@ -73,6 +73,7 @@ Siden skal serveres over http. YouTube-embeds virker ikke fra `file://`.
 | `src/motion.js` | Continia motion-tokens i JS (varigheder og easings) |
 | `src/styles.css` | Styles på Continia Front end-designsystemet |
 | `src/config.js` | Repoet som "Tilføj"-knapperne linker til |
+| `fonts/` | Alliance No.2 som WOFF2 (400, 500, 600, 700). Continia har web-licens |
 | `scripts/build-manifest.mjs` | Scanner `Assets/`, `categories.json` og `videos.txt` og skriver `content.json` |
 
 Ikoner: Font Awesome Light fra Continias Pro-kit (se [`.font-awesome.md`](.font-awesome.md)). Repoet indeholder ingen Font Awesome-filer, ikonerne hentes fra kittet.

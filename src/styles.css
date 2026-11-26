@@ -1,6 +1,37 @@
 /* Continia AD Board — built on the Continia Front end design system.
    Navy ground, Innovation Blue as a signal only, motion from the motion tokens. */
 
+/* Alliance No.2, Continia's typeface, served with the site (Continia holds the web licence).
+   Only the weights the site uses: 400 body, 500, 600 labels and buttons, 700. */
+@font-face {
+  font-family: "Alliance No.2";
+  src: url("../fonts/AllianceNo2-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Alliance No.2";
+  src: url("../fonts/AllianceNo2-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Alliance No.2";
+  src: url("../fonts/AllianceNo2-SemiBold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Alliance No.2";
+  src: url("../fonts/AllianceNo2-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   /* Colour */
   --c-tech-blue: #052975;

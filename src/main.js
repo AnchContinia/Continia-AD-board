@@ -1086,7 +1086,12 @@ makeLogoSprite(8).then((logo) => {
 }).catch(() => {});
 
 const ringLabels = []; // category labels, moved with their ring when the tilt changes
-document.fonts.ready.then(() => {
+// The labels are drawn once into canvases, so Alliance must be loaded first;
+// fonts.ready alone would not fetch a face no DOM text has asked for yet.
+Promise.all([
+  document.fonts.load('600 64px "Alliance No.2"'),
+  document.fonts.load('600 44px "Alliance No.2"'),
+]).catch(() => {}).then(() => document.fonts.ready).then(() => {
   const title = makeLabelSprite('AD BOARD', 1.9, { size: 64, weight: 600, tracking: 0.3, color: 'rgba(255,255,255,0.86)' });
   title.position.set(0, -4.6, 0);
   centre.add(title);
