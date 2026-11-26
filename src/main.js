@@ -24,6 +24,7 @@ const MAX_CARD_W = 6.6;
 const SPACING = 8.4; // arc length per card on a ring
 const FIRST_RADIUS = 24;
 const RING_TILT = THREE.MathUtils.degToRad(20); // every ring leans this far out of the horizontal
+const RING_YAW = THREE.MathUtils.degToRad(-30); // direction the rings lean toward
 const RING_GAP = 9.5;
 const GROUP_GAP = 6;
 const BASE_ORBIT = 0.02; // rad/s on the innermost ring; outer rings go slower
@@ -401,28 +402,19 @@ function buildLayout(items) {
   const groupInfo = [];
   let r = FIRST_RADIUS;
 
+  // Every ring shares one plane, tilted RING_TILT toward RING_YAW: concentric
+  // orbits read as one ordered system, not rings crossing at random.
+  const ringQ = new THREE.Quaternion().setFromEuler(new THREE.Euler(RING_TILT, RING_YAW, 0, 'YXZ'));
+
   for (const [name, list] of groups) {
     const rnd = mulberry32(hashStr(name));
-    // Every ring leans exactly RING_TILT out of the horizontal. Only the
-    // direction it leans toward (yaw) and which way (sign) vary per category.
-    const tiltSign = rnd() < 0.5 ? -1 : 1;
-    const groupYaw = rnd() * Math.PI * 2;
-    const groupQ = new THREE.Quaternion().setFromEuler(
-      new THREE.Euler(tiltSign * RING_TILT, groupYaw, 0, 'YXZ'),
-    );
     const ownRings = [];
     let i = 0;
     while (i < list.length) {
       const cap = Math.max(6, Math.floor((2 * Math.PI * r) / SPACING));
       const chunk = list.slice(i, i + cap);
       i += cap;
-      // Extra rings in a big group lean the same 20°, toward a slightly
-      // different direction, so the group fills space instead of one flat disc.
-      const q = ownRings.length === 0
-        ? groupQ.clone()
-        : new THREE.Quaternion().setFromEuler(
-          new THREE.Euler(tiltSign * RING_TILT, groupYaw + (rnd() - 0.5) * 1.2, 0, 'YXZ'),
-        );
+      const q = ringQ.clone();
       const ring = {
         r,
         q,
