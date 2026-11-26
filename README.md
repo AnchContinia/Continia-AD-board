@@ -51,7 +51,7 @@ Hvert push til `main` kører workflowet [Deploy moodboard](.github/workflows/pag
 | I viseren | `←` `→` bladrer, `Esc` lukker | |
 | Tilbage til overblik | `H` eller sigtekorn-knappen | Sigtekorn-knappen |
 | Orbit eller liste | Knappen nederst i midten, eller `L` | Knappen nederst i midten |
-| Ringenes hældning | Plan/Kryds under logoet, eller `K`. Plan: alle ringe i ét plan, 20° hældning. Kryds: hver kategori hælder sin vej, 35–55° | Plan/Kryds under logoet |
+| Ringenes hældning | Plan/Kryds under logoet, eller `K`. Plan: alle ringe i ét plan, 20° hældning. Kryds: hver kategori hælder sin vej, 26–34° | Plan/Kryds under logoet |
 
 ## Kør lokalt
 

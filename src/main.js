@@ -26,8 +26,8 @@ const FIRST_RADIUS = 24;
 const RING_TILT = THREE.MathUtils.degToRad(20); // every ring leans this far out of the horizontal
 const RING_YAW = THREE.MathUtils.degToRad(-30); // direction the rings lean toward
 // The "Kryds" look: each category leans its own way, this steeply, so the rings cross.
-const CROSS_TILT_MIN = THREE.MathUtils.degToRad(35);
-const CROSS_TILT_MAX = THREE.MathUtils.degToRad(55);
+const CROSS_TILT_MIN = THREE.MathUtils.degToRad(26);
+const CROSS_TILT_MAX = THREE.MathUtils.degToRad(34);
 const RING_GAP = 9.5;
 const GROUP_GAP = 6;
 const BASE_ORBIT = 0.02; // rad/s on the innermost ring; outer rings go slower
@@ -408,7 +408,7 @@ function buildLayout(items) {
   // Two looks, switched live (setTilt):
   // - plan: every ring in one plane, tilted RING_TILT toward RING_YAW, so the
   //   orbits read as one ordered, concentric system.
-  // - cross: each category leans its own way at 35–55°, so the rings cross.
+  // - cross: each category leans its own way at 26–34°, so the rings cross gently.
   const planQ = new THREE.Quaternion().setFromEuler(new THREE.Euler(RING_TILT, RING_YAW, 0, 'YXZ'));
   const startCross = state.tilt === 'cross';
 
@@ -427,7 +427,7 @@ function buildLayout(items) {
       // so the group fills space instead of stacking into one disc.
       const qCross = new THREE.Quaternion().setFromEuler(new THREE.Euler(
         crossSign * crossTilt,
-        crossYaw + (ownRings.length === 0 ? 0 : (rnd() - 0.5) * 1.2),
+        crossYaw + (ownRings.length === 0 ? 0 : (rnd() - 0.5) * 0.6),
         0,
         'YXZ',
       ));
