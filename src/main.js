@@ -25,6 +25,9 @@ const SPACING = 8.4; // arc length per card on a ring
 const FIRST_RADIUS = 24;
 const RING_TILT = THREE.MathUtils.degToRad(20); // every ring leans this far out of the horizontal
 const RING_YAW = THREE.MathUtils.degToRad(-30); // direction the rings lean toward
+// The "Kryds" look: each category leans its own way, this steeply, so the rings cross.
+const CROSS_TILT_MIN = THREE.MathUtils.degToRad(35);
+const CROSS_TILT_MAX = THREE.MathUtils.degToRad(55);
 const RING_GAP = 9.5;
 const GROUP_GAP = 6;
 const BASE_ORBIT = 0.02; // rad/s on the innermost ring; outer rings go slower
@@ -402,26 +405,41 @@ function buildLayout(items) {
   const groupInfo = [];
   let r = FIRST_RADIUS;
 
-  // Every ring shares one plane, tilted RING_TILT toward RING_YAW: concentric
-  // orbits read as one ordered system, not rings crossing at random.
-  const ringQ = new THREE.Quaternion().setFromEuler(new THREE.Euler(RING_TILT, RING_YAW, 0, 'YXZ'));
+  // Two looks, switched live (setTilt):
+  // - plan: every ring in one plane, tilted RING_TILT toward RING_YAW, so the
+  //   orbits read as one ordered, concentric system.
+  // - cross: each category leans its own way at 35–55°, so the rings cross.
+  const planQ = new THREE.Quaternion().setFromEuler(new THREE.Euler(RING_TILT, RING_YAW, 0, 'YXZ'));
+  const startCross = state.tilt === 'cross';
 
   for (const [name, list] of groups) {
     const rnd = mulberry32(hashStr(name));
+    const crossSign = rnd() < 0.5 ? -1 : 1;
+    const crossYaw = rnd() * Math.PI * 2;
+    const crossTilt = CROSS_TILT_MIN + rnd() * (CROSS_TILT_MAX - CROSS_TILT_MIN);
     const ownRings = [];
     let i = 0;
     while (i < list.length) {
       const cap = Math.max(6, Math.floor((2 * Math.PI * r) / SPACING));
       const chunk = list.slice(i, i + cap);
       i += cap;
-      const q = ringQ.clone();
+      // Extra rings in a big group lean a little differently in the cross look,
+      // so the group fills space instead of stacking into one disc.
+      const qCross = new THREE.Quaternion().setFromEuler(new THREE.Euler(
+        crossSign * crossTilt,
+        crossYaw + (ownRings.length === 0 ? 0 : (rnd() - 0.5) * 1.2),
+        0,
+        'YXZ',
+      ));
       const ring = {
         r,
-        q,
+        q: (startCross ? qCross : planQ).clone(),
+        qPlan: planQ.clone(),
+        qCross,
         angle: rnd() * Math.PI * 2,
         speed: BASE_ORBIT * Math.pow(FIRST_RADIUS / r, 1.5),
       };
-      makeRingLine(r, ring.q);
+      ring.line = makeRingLine(r, ring.q);
       chunk.forEach((data, k) => {
         const ir = mulberry32(hashStr(data.id || data.src || data.url || String(k)));
         const slot = (Math.PI * 2) / chunk.length;
@@ -638,7 +656,14 @@ const state = {
   interacted: false,
   view: 'orbit', // 'orbit' | 'list'
   viewChangedAt: 0,
+  tilt: savedTilt(), // 'plan' | 'cross'
+  tiltMix: 0, // 0 = plan, 1 = cross; eases toward state.tilt
 };
+state.tiltMix = state.tilt === 'cross' ? 1 : 0;
+
+function savedTilt() {
+  try { return localStorage.getItem('adboard:tilt') === 'cross' ? 'cross' : 'plan'; } catch { return 'plan'; }
+}
 
 let listView = null; // built the first time the list is shown
 
@@ -973,6 +998,10 @@ window.addEventListener('keydown', (e) => {
     return;
   }
   if (state.view === 'list') return;
+  if (k === 'k' && !e.repeat) {
+    setTilt(state.tilt === 'plan' ? 'cross' : 'plan');
+    return;
+  }
   if (k === 'h') {
     goHome();
     return;
@@ -1056,6 +1085,7 @@ makeLogoSprite(8).then((logo) => {
   centre.add(logo);
 }).catch(() => {});
 
+const ringLabels = []; // category labels, moved with their ring when the tilt changes
 document.fonts.ready.then(() => {
   const title = makeLabelSprite('AD BOARD', 1.9, { size: 64, weight: 600, tracking: 0.3, color: 'rgba(255,255,255,0.86)' });
   title.position.set(0, -4.6, 0);
@@ -1064,7 +1094,10 @@ document.fonts.ready.then(() => {
   for (const g of layout.groups) {
     const label = makeLabelSprite(`${g.name.toUpperCase()}  ·  ${g.count}`, 1.8, { color: 'rgba(143,248,255,0.9)' });
     const a = Math.PI / 2;
-    label.position.set(Math.cos(a) * (g.ring.r + 5), 4.4, Math.sin(a) * (g.ring.r + 5)).applyQuaternion(g.ring.q);
+    label.userData.local = new THREE.Vector3(Math.cos(a) * (g.ring.r + 5), 4.4, Math.sin(a) * (g.ring.r + 5));
+    label.userData.ring = g.ring;
+    label.position.copy(label.userData.local).applyQuaternion(g.ring.q);
+    ringLabels.push(label);
     scene.add(label);
   }
 });
@@ -1133,6 +1166,27 @@ function setView(view, { instant = false } = {}) {
 }
 
 viewButtons.forEach((b) => b.addEventListener('click', () => setView(b.dataset.view)));
+
+// ---------------------------------------------------------------- tilt switch: plan / cross
+
+const tiltSwitch = $('.tiltswitch');
+const tiltButtons = tiltSwitch.querySelectorAll('[data-tilt]');
+tiltSwitch.hidden = state.cards.length === 0;
+
+function syncTiltSwitch() {
+  tiltSwitch.dataset.active = state.tilt;
+  tiltButtons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.tilt === state.tilt)));
+}
+
+function setTilt(tilt) {
+  if (tilt === state.tilt) return;
+  state.tilt = tilt;
+  syncTiltSwitch();
+  try { localStorage.setItem('adboard:tilt', tilt); } catch { /* private mode */ }
+}
+
+syncTiltSwitch();
+tiltButtons.forEach((b) => b.addEventListener('click', () => setTilt(b.dataset.tilt)));
 
 // ---------------------------------------------------------------- category picker
 
@@ -1319,7 +1373,24 @@ function updateCamera(dt, now) {
   camera.updateMatrixWorld();
 }
 
+// Ease every ring between its plan and cross pose; a no-op once settled.
+function updateTilt(dt) {
+  const to = state.tilt === 'cross' ? 1 : 0;
+  if (state.tiltMix === to) return;
+  const step = reduced ? 1 : dt / (motion.duration.slower / 1000);
+  state.tiltMix = to > state.tiltMix ? Math.min(to, state.tiltMix + step) : Math.max(to, state.tiltMix - step);
+  const t = ease.inOut(state.tiltMix);
+  for (const ring of state.rings) {
+    ring.q.slerpQuaternions(ring.qPlan, ring.qCross, t);
+    ring.line.quaternion.copy(ring.q);
+  }
+  for (const label of ringLabels) {
+    label.position.copy(label.userData.local).applyQuaternion(label.userData.ring.q);
+  }
+}
+
 function updateCards(dt) {
+  updateTilt(dt);
   const orbitTarget = reduced || state.orbitHold || state.hovered ? 0 : 1;
   state.orbitScale = damp(state.orbitScale, orbitTarget, 3, dt);
   for (const ring of state.rings) ring.angle += ring.speed * dt * state.orbitScale;

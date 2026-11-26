@@ -19,11 +19,18 @@
   <canvas id="scene" tabindex="0" aria-label="3D-moodboard. Træk for at kigge rundt, scroll for at flyve, hold højreklik og brug W A S D for at styre, klik på et kort for at åbne det. Brug listen over indhold for at åbne kort med tastaturet."></canvas>
 
   <header class="hud hud--top">
-    <a class="brand" href="./" aria-label="Continia AD Board, forfra">
-      <img src="brand/continia-primary-white.svg" alt="Continia">
-      <span class="brand__divider" aria-hidden="true"></span>
-      <span class="brand__name">AD Board</span>
-    </a>
+    <div class="brandcol">
+      <a class="brand" href="./" aria-label="Continia AD Board, forfra">
+        <img src="brand/continia-primary-white.svg" alt="Continia">
+        <span class="brand__divider" aria-hidden="true"></span>
+        <span class="brand__name">AD Board</span>
+      </a>
+      <div class="tiltswitch" role="group" aria-label="Ringenes hældning" data-active="plan" hidden>
+        <span class="tiltswitch__thumb" aria-hidden="true"></span>
+        <button type="button" data-tilt="plan" aria-pressed="true" title="Ringene i ét plan (K skifter)">Plan</button>
+        <button type="button" data-tilt="cross" aria-pressed="false" title="Ringene krydser hinanden (K skifter)">Kryds</button>
+      </div>
+    </div>
 
     <div class="controls">
       <div class="catpick" hidden>
